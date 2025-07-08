@@ -7,7 +7,7 @@ from openai import OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # URL to your FastAPI backend (deployed or local)
-BASE_URL = "http://localhost:8000"  # or your Railway domain
+BASE_URL = "https://market-scout-api-production.up.railway.app"  # or your Railway domain
 
 ENDPOINTS = {
     "get_company_kpis": "/get_company_kpis"

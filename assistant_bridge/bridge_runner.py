@@ -3,35 +3,15 @@ import json
 import requests
 from openai import OpenAI
 
-# Setup OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# URL to your FastAPI backend (deployed or local)
-BASE_URL = "https://market-scout-api-production.up.railway.app"  # or your Railway domain
+BASE_URL = "https://market-scout-api-production.up.railway.app"
 
 ENDPOINTS = {
     "get_company_kpis": "/get_company_kpis"
 }
 
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "get_company_kpis",
-            "description": "Get key performance indicators for a company by ticker",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "ticker": {
-                        "type": "string",
-                        "description": "The stock ticker symbol (e.g., AAPL)"
-                    }
-                },
-                "required": ["ticker"]
-            }
-        }
-    }
-]
+# Your tools setup remains the same...
 
 response = client.chat.completions.create(
     model="gpt-4o",
@@ -47,7 +27,13 @@ if tool_calls:
     arguments = json.loads(tool_call.function.arguments)
     ticker = arguments.get("ticker")
 
-    if function_name in ENDPOINTS and ticker:
+    # Check if API key exists before making the API call
+    finchat_api_key = os.getenv("FINCHAT_API_KEY")
+    if not finchat_api_key:
+        api_result = {
+            "error": "FINCHAT_API_KEY is missing. Cannot fetch KPIs."
+        }
+    elif function_name in ENDPOINTS and ticker:
         res = requests.post(BASE_URL + ENDPOINTS[function_name], json={"ticker": ticker})
         api_result = res.json() if res.ok else {
             "error": f"Status {res.status_code}",
@@ -58,6 +44,7 @@ if tool_calls:
 
     print("\nAPI Result:\n", api_result)
 
+    # Follow-up chat with the assistant as before
     follow_up = client.chat.completions.create(
         model="gpt-4o",
         messages=[
@@ -73,8 +60,6 @@ if tool_calls:
             }
         ]
     )
-
     print("\nAssistant Response:\n", follow_up.choices[0].message.content)
 else:
     print("\nAssistant Response:\n", response.choices[0].message.content)
-# debug test line

@@ -8,11 +8,10 @@ app = FastAPI()
 async def get_company_kpis(request: Request):
     data = await request.json()
     ticker = data.get("ticker")
-    api_key = os.getenv("FINCHAT_API_KEY")  # Use your actual environment variable
+    api_key = os.getenv("FINCHAT_API_KEY")
 
     if not ticker:
         return {"error": "Ticker symbol is required."}
-
     if not api_key:
         return {"error": "FINCHAT_API_KEY is not set in the environment."}
 
@@ -28,7 +27,6 @@ async def get_company_kpis(request: Request):
             "details": response.text
         }
 
-# Optional: root endpoint for sanity check
 @app.get("/")
 def read_root():
     return {"message": "Market Scout API is running"}
